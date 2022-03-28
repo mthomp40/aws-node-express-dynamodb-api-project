@@ -1,0 +1,21 @@
+{
+  "name": "aws-node-express-dynamodb-api-project",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "debug": "node --inspect ./node_modules/.bin/serverless offline -s dev",
+    "dev": "serverless offline start"
+  },
+  "dependencies": {
+    "apollo-server-lambda": "^3.6.6",
+    "aws-sdk": "^2.1101.0",
+    "express": "^4.17.1",
+    "graphql": "^16.3.0",
+    "graphql-tools": "^8.2.3",
+    "serverless-http": "^2.7.0"
+  },
+  "devDependencies": {
+    "serverless": "^3.10.0",
+    "serverless-offline": "^8.5.0"
+  }
+}

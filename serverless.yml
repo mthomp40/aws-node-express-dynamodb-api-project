@@ -1,0 +1,100 @@
+org: mthomp40
+app: aws-node-express-dynamodb-api-project
+service: aws-node-express-dynamodb-api-project
+frameworkVersion: "3"
+
+custom:
+  defaultStage: "dev"
+  defaultRegion: "ap-southeast-2"
+  tableName: "users-table-${sls:stage}"
+  serverless-offline:
+    httpPort: 4000
+
+provider:
+  name: aws
+  stage: dev
+  runtime: nodejs14.x
+  region: ap-southeast-2
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [UsersTable, Arn]
+  environment:
+    DYNAMODB_TABLE_NAME: ${self:custom.tableName}
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.tableName}
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: objType
+            KeyType: RANGE
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: objType
+            AttributeType: S
+          - AttributeName: objKey
+            AttributeType: S
+          - AttributeName: parentKey
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: objType-index
+            ProvisionedThroughput:
+              Fn::If:
+                - isProvisioned
+                - ReadCapacityUnits: !Ref "GsiObjTypeReadWriteCapacityMin"
+                  WriteCapacityUnits: !Ref "GsiObjTypeReadWriteCapacityMin"
+                - !Ref "AWS::NoValue"
+            KeySchema:
+              - AttributeName: objType
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: objKey-objType-index
+            ProvisionedThroughput:
+              Fn::If:
+                - isProvisioned
+                - ReadCapacityUnits: !Ref "GsiObjKeyObjTypeReadWriteCapacityMin"
+                  WriteCapacityUnits: !Ref "GsiObjKeyObjTypeReadWriteCapacityMin"
+                - !Ref "AWS::NoValue"
+            KeySchema:
+              - AttributeName: objKey
+                KeyType: HASH
+              - AttributeName: objType
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: parentKey-objType-index
+            ProvisionedThroughput:
+              Fn::If:
+                - isProvisioned
+                - ReadCapacityUnits: !Ref "GsiParentKeyObjTypeReadWriteCapacityMin"
+                  WriteCapacityUnits: !Ref "GsiParentKeyObjTypeReadWriteCapacityMin"
+                - !Ref "AWS::NoValue"
+            KeySchema:
+              - AttributeName: parentKey
+                KeyType: HASH
+              - AttributeName: objType
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+functions: ${file(./serverless-functions.yml)}
+
+plugins:
+  - serverless-offline

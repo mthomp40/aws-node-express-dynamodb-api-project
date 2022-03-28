@@ -1,0 +1,24 @@
+type User {
+  id: String!
+  name: String!
+}
+
+type Product {
+  id: String!
+  name: String!
+  price: String!
+}
+
+type Order {
+  id: String!
+  customerName: String!
+  deliveryAddress: String!
+  product: Product!
+  quantity: Int!
+}
+
+type Query {
+  getUserById(id: String!): User
+  getProductById(id: String!): Product
+  getOrderById(id: String!): Order
+}

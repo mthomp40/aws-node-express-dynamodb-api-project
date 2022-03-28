@@ -1,0 +1,10 @@
+# api:
+#   handler: handler.handler
+#   events:
+#     - httpApi: "*"
+graphql:
+  handler: handler.graphql
+  events:
+    - http:
+        path: /graphql
+        method: POST
